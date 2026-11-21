@@ -12,6 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- HEADER -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,13 +64,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Fix lag nhẹ · giảm rung · tâm tĩnh"
+                        android:text="Tối ưu file Game · Fix Lag"
                         android:textColor="#DDFFFFFF"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- STATUS -->
         <TextView
             android:id="@+id/statusText"
             android:layout_width="match_parent"
@@ -86,45 +88,21 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="KẾT NỐI SHIZUKU"
             android:textColor="@color/accent"
             app:cornerRadius="14dp"
             app:strokeColor="@color/accent"
             app:strokeWidth="1dp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/breatheCard"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
-            android:visibility="gone"
-            app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="80dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/accent"
-            app:strokeWidth="2dp">
-
-            <TextView
-                android:id="@+id/breatheText"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="Hít vào... 4"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </com.google.android.material.card.MaterialCardView>
-
+        <!-- OPTIONS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginStart="4dp"
             android:letterSpacing="0.15"
-            android:text="TÙY CHỌN"
+            android:text="TÙY CHỌN TỐI ƯU"
             android:textColor="@color/accent"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -144,14 +122,16 @@
                 android:orientation="vertical"
                 android:padding="6dp">
 
+                <!-- CAN THIỆP FILE -->
                 <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swHaptic"
+                    android:id="@+id/swFile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:padding="12dp"
-                    android:text="📳  Giảm rung &amp; âm chạm"
-                    android:textColor="@color/on_surface" />
+                    android:text="🛠️  Can thiệp file Game (Hạ đồ họa, tắt bóng)"
+                    android:textColor="#22D3EE"
+                    android:textStyle="bold" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/swAnim"
@@ -159,32 +139,7 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:padding="12dp"
-                    android:text="✨  Tắt animation (cảm giác mượt)"
-                    android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swBlur"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:padding="12dp"
-                    android:text="🌫️  Tắt blur nền (giảm tải GPU)"
-                    android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swGpu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:text="🎨  Force GPU rendering"
-                    android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swBgLimit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:text="⚙️  Giới hạn background process"
+                    android:text="✨  Tắt animation &amp; Blur nền"
                     android:textColor="@color/on_surface" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
@@ -193,24 +148,7 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:padding="12dp"
-                    android:text="🧠  Dọn RAM nền"
-                    android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swCache"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:padding="12dp"
-                    android:text="🗑️  Dọn cache hệ thống"
-                    android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swDropCache"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:text="💧  Drop kernel caches (best-effort)"
+                    android:text="🧠  Dọn RAM nền (Zalo, FB, TikTok...)"
                     android:textColor="@color/on_surface" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
@@ -221,24 +159,17 @@
                     android:padding="12dp"
                     android:text="🎮  Game Mode Performance (FF)"
                     android:textColor="@color/on_surface" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swCpu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:text="🔥  Ép CPU performance (best-effort)"
-                    android:textColor="@color/on_surface" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- BUTTONS -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStart"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="20dp"
             android:backgroundTint="@color/primary"
-            android:text="⚡  BẮT ĐẦU LÀM MƯỢT"
+            android:text="⚡  BẮT ĐẦU TỐI ƯU"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -250,19 +181,20 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="10dp"
-            android:text="↺  KHÔI PHỤC MẶC ĐỊNH"
+            android:text="↺  KHÔI PHỤC FILE GỐC"
             android:textColor="@color/accent"
             app:cornerRadius="14dp"
             app:strokeColor="@color/accent"
             app:strokeWidth="1dp" />
 
+        <!-- LOG -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginStart="4dp"
             android:letterSpacing="0.15"
-            android:text="NHẬT KÝ"
+            android:text="NHẬT KÝ THỰC THI"
             android:textColor="@color/accent"
             android:textSize="12sp"
             android:textStyle="bold" />
