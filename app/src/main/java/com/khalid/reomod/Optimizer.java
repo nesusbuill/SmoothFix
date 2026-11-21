@@ -36,7 +36,9 @@ public class Optimizer {
         }
     }
 
-    private void run(String cmd) { sh(cmd); }
+    private void run(String cmd) {
+        sh(cmd);
+    }
 
     public void reduceHaptic() {
         log("📳 Giảm rung & âm chạm...");
