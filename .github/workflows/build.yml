@@ -23,9 +23,13 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
 
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses > /dev/null 2>&1 || true
+      - name: Install required SDK packages
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Setup Gradle 8.2
         uses: gradle/actions/setup-gradle@v3
