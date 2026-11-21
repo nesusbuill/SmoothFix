@@ -2,7 +2,6 @@ package com.khalid.reomod;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
 import rikka.shizuku.Shizuku;
 
 public class Optimizer {
@@ -32,16 +31,72 @@ public class Optimizer {
             r.close();
             return sb.toString();
         } catch (Exception e) {
-            return "ERR: " + e.getMessage();
+            return "";
         }
     }
 
-    private void run(String cmd) {
-        sh(cmd);
+    private void run(String cmd) { sh(cmd); }
+
+    // --- CHỨC NĂNG CAN THIỆP FILE GAME ---
+    public void patchGameFile(String pkg, String gameName) {
+        log("🛠️ Can thiệp file: " + gameName);
+        run("am force-stop " + pkg);
+        try { Thread.sleep(1000); } catch (Exception ignored) {}
+
+        String dir = "/data/data/" + pkg;
+        String dataIni = dir + "/files/data.ini";
+        String prefXml = dir + "/shared_prefs/" + pkg + "_preferences.xml";
+
+        // 1. Backup file
+        run("mkdir -p /sdcard/ReoModBackup/");
+        run("cp " + dataIni + " /sdcard/ReoModBackup/" + pkg + "_data.ini.bak");
+        run("cp " + prefXml + " /sdcard/ReoModBackup/" + pkg + "_pref.xml.bak");
+        log("  ✓ Đã backup file gốc ra /sdcard/ReoModBackup/");
+
+        // 2. Can thiệp data.ini (Hạ Res, tắt bóng, tắt HDR)
+        run("sed -i 's/^ResolutionQuality=.*/ResolutionQuality=1/' " + dataIni);
+        run("sed -i 's/^GraphicsQuality=.*/GraphicsQuality=1/' " + dataIni);
+        run("sed -i 's/^bShadow=.*/bShadow=0/' " + dataIni);
+        run("sed -i 's/^bHDR=.*/bHDR=0/' " + dataIni);
+        
+        // 3. Can thiệp file cài đặt (Tắt shadow, ép FPS)
+        run("sed -i '/ff_shadow/ s/value=\"[^\"]*\"/value=\"false\"/' " + prefXml);
+        run("sed -i '/ff_quality/ s/value=\"[^\"]*\"/value=\"0\"/' " + prefXml);
+        run("sed -i '/ff_max_fps/ s/value=\"[^\"]*\"/value=\"1\"/' " + prefXml);
+
+        // 4. Phân quyền lại
+        run("chmod 660 " + dataIni);
+        run("chmod 660 " + prefXml);
+        run("chown system:system " + dataIni);
+        run("chown system:system " + prefXml);
+
+        // 5. Xóa cache
+        run("rm -rf " + dir + "/cache/*");
+
+        log("  ✓ Đã hạ đồ họa & tắt bóng " + gameName);
     }
 
+    public void restoreGameFile(String pkg, String gameName) {
+        log("↺ Phục hồi file gốc: " + gameName);
+        run("am force-stop " + pkg);
+        
+        String dir = "/data/data/" + pkg;
+        String dataIni = dir + "/files/data.ini";
+        String prefXml = dir + "/shared_prefs/" + pkg + "_preferences.xml";
+
+        run("cp /sdcard/ReoModBackup/" + pkg + "_data.ini.bak " + dataIni);
+        run("cp /sdcard/ReoModBackup/" + pkg + "_pref.xml.bak " + prefXml);
+        
+        run("chmod 660 " + dataIni);
+        run("chmod 660 " + prefXml);
+        run("chown system:system " + dataIni);
+        run("chown system:system " + prefXml);
+
+        log("  ✓ Đã phục hồi file gốc " + gameName);
+    }
+
+    // --- CÁC CHỨC NĂNG HỆ THỐNG ---
     public void reduceHaptic() {
-        log("📳 Giảm rung & âm chạm...");
         run("settings put system haptic_feedback_enabled 0");
         run("settings put system sound_effects_enabled 0");
         run("settings put system vibrate_on 0");
@@ -49,88 +104,33 @@ public class Optimizer {
     }
 
     public void disableAnimations() {
-        log("✨ Tắt animation hệ thống...");
         run("settings put global window_animation_scale 0");
         run("settings put global transition_animation_scale 0");
         run("settings put global animator_duration_scale 0");
-        log("✓ Animation = 0, UI phản hồi tức thì");
-    }
-
-    public void disableBlur() {
-        log("🌫️ Tắt blur nền (giảm tải GPU)...");
         run("settings put global disable_window_blurs 1");
-        log("✓ Đã tắt blur (Android 12+)");
-    }
-
-    public void forceGpuRendering() {
-        log("🎨 Force GPU rendering...");
-        run("setprop debug.egl.hw 1");
-        run("setprop debug.sf.hw 1");
-        log("✓ GPU rendering (áp dụng triệt để sau reboot)");
-    }
-
-    public void disableHwOverlays() {
-        log("🖥️ Tắt HW overlays (giảm compositing)...");
-        run("service call SurfaceFlinger 1008 i32 1 2>/dev/null");
-        log("✓ HW overlays tắt (best-effort)");
-    }
-
-    public void limitBackgroundProcesses() {
-        log("⚙️ Giới hạn background process...");
-        run("settings put global background_process_limit 2");
-        log("✓ Background process limit = 2");
+        log("✓ Đã tắt animation & blur");
     }
 
     public void killBackground() {
-        log("🧠 Dọn RAM nền...");
         String[] pkgs = {
-                "com.facebook.katana", "com.facebook.orca", "com.instagram.android",
+                "com.zing.zalo", "com.facebook.katana", "com.facebook.orca",
                 "com.zhiliaoapp.musically", "com.ss.android.ugc.trill",
                 "com.google.android.youtube", "com.spotify.music",
-                "com.snapchat.android", "com.twitter.android", "com.discord",
-                "com.netflix.mediaclient", "com.linkedin.android",
-                "com.shopee.vn", "com.zing.zalo"
+                "com.shopee.vn", "com.instagram.android", "com.twitter.android"
         };
         for (String p : pkgs) run("am force-stop " + p);
         run("am kill-all");
-        log("✓ Đã dọn app nền");
-    }
-
-    public void trimCaches() {
-        log("🗑️ Dọn cache hệ thống...");
         run("pm trim-caches 1073741824");
-        log("✓ Cache đã dọn");
+        log("✓ Đã dọn RAM nền & cache");
     }
 
-    public void gameMode(String pkg) {
-        log("🎮 Game Mode performance: " + pkg);
-        run("cmd game set --mode performance " + pkg);
-        log("✓ Game Mode (nếu máy hỗ trợ)");
+    public void gameMode() {
+        run("cmd game set --mode performance com.dts.freefireth 2>/dev/null");
+        run("cmd game set --mode performance com.dts.freefiremax 2>/dev/null");
+        log("✓ Đã ép Game Mode FF");
     }
 
-    public void cpuPerformance() {
-        log("🔥 Ép CPU performance (best-effort)...");
-        String[] paths = {
-                "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-                "/sys/devices/system/cpu/cpu4/cpufreq/scaling_governor",
-                "/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor"
-        };
-        for (String p : paths) run("echo performance > " + p + " 2>/dev/null");
-        log("✓ Ép CPU xong (có thể fail nếu không root)");
-    }
-
-    public void dropKernelCaches() {
-        log("💧 Drop kernel caches (best-effort)...");
-        String out = sh("echo 3 > /proc/sys/vm/drop_caches 2>&1");
-        if (out.trim().isEmpty() || !out.toLowerCase().contains("denied")) {
-            log("✓ Kernel caches đã drop");
-        } else {
-            log("✗ Kernel chặn (cần root) — bỏ qua");
-        }
-    }
-
-    public void restoreAll() {
-        log("↺ Khôi phục mặc định...");
+    public void restoreSystem() {
         run("settings put global window_animation_scale 1");
         run("settings put global transition_animation_scale 1");
         run("settings put global animator_duration_scale 1");
@@ -138,14 +138,6 @@ public class Optimizer {
         run("settings put system sound_effects_enabled 1");
         run("settings put system vibrate_on 1");
         run("settings put global disable_window_blurs 0");
-        run("settings put global background_process_limit 0");
-        run("setprop debug.egl.hw 0");
-        run("setprop debug.sf.hw 0");
-        run("service call SurfaceFlinger 1008 i32 0 2>/dev/null");
-        log("✓ Đã khôi phục mọi thứ về mặc định");
-    }
-
-    public static String[] games() {
-        return new String[]{"com.dts.freefireth", "com.dts.freefiremax"};
+        log("✓ Đã khôi phục hệ thống");
     }
 }
