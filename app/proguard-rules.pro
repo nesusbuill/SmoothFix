@@ -1,8 +1,8 @@
-# Giữ lại toàn bộ Shizuku API để R8 không xóa
+# Giữ lại toàn bộ thư viện Shizuku để R8 không xóa khi build Release
 -keep class rikka.shizuku.** { *; }
 -keep interface rikka.shizuku.** { *; }
 -keep class moe.shizuku.** { *; }
 -keep interface moe.shizuku.** { *; }
 
-# Giữ lại các lớp liên quan đến Shizuku Provider
+# Giữ lại Provider quan trọng
 -keep class rikka.shizuku.ShizukuProvider { *; }
