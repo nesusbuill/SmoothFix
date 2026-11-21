@@ -34,13 +34,30 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
     private Optimizer opt;
     private volatile boolean busy = false;
 
+    // Lắng nghe khi Shizuku kết nối xong
+    private final Shizuku.OnBinderReceivedListener binderListener = () -> {
+        handler.post(this::updateStatus);
+    };
+
+    // Lắng nghe khi Shizuku bị ngắt kết nối
+    private final Shizuku.OnBinderDeadListener binderDeadListener = () -> {
+        handler.post(() -> {
+            statusText.setText("✗ Shizuku đã ngắt kết nối");
+            statusText.setTextColor(0xFFFF6B6B);
+        });
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         bindViews();
         opt = new Optimizer(this::log);
+
         Shizuku.addRequestPermissionResultListener(this);
+        Shizuku.addBinderReceivedListenerSticky(binderListener);
+        Shizuku.addBinderDeadListener(binderDeadListener);
+
         updateStatus();
     }
 
@@ -72,29 +89,43 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
 
     private void updateStatus() {
         try {
+            if (!Shizuku.pingBinder()) {
+                statusText.setText("○ Shizuku chưa chạy");
+                statusText.setTextColor(0xFFFBBF24);
+                return;
+            }
             if (Shizuku.isPreV11()) {
                 statusText.setText("✗ Shizuku quá cũ — cần v11+");
                 statusText.setTextColor(0xFFFF6B6B);
                 return;
             }
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                statusText.setText("● Shizuku đã kết nối");
+                statusText.setText("● Shizuku đã kết nối & cấp quyền");
                 statusText.setTextColor(0xFF4ADE80);
             } else {
                 statusText.setText("○ Chưa cấp quyền Shizuku");
                 statusText.setTextColor(0xFFFBBF24);
             }
         } catch (Throwable t) {
-            statusText.setText("✗ Shizuku chưa cài");
+            statusText.setText("✗ Lỗi Shizuku");
             statusText.setTextColor(0xFFFF6B6B);
         }
     }
 
     private void requestPerm() {
         try {
-            if (Shizuku.isPreV11()) { log("Cần Shizuku v11+"); return; }
+            if (!Shizuku.pingBinder()) {
+                log("Shizuku chưa chạy. Hãy mở app Shizuku trước.");
+                return;
+            }
+            if (Shizuku.isPreV11()) {
+                log("Cần Shizuku v11+");
+                return;
+            }
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                log("Shizuku đã sẵn sàng"); updateStatus(); return;
+                log("Shizuku đã sẵn sàng");
+                updateStatus();
+                return;
             }
             Shizuku.requestPermission(REQ);
         } catch (Throwable t) {
@@ -105,15 +136,19 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
     @Override
     public void onRequestPermissionResult(int requestCode, int grantResult) {
         if (requestCode == REQ) {
-            if (grantResult == PackageManager.PERMISSION_GRANTED) log("✓ Đã cấp quyền Shizuku");
-            else log("✗ Từ chối cấp quyền");
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                log("✓ Đã cấp quyền Shizuku");
+            } else {
+                log("✗ Từ chối cấp quyền");
+            }
             updateStatus();
         }
     }
 
     private boolean hasPerm() {
         try {
-            return !Shizuku.isPreV11()
+            return Shizuku.pingBinder()
+                    && !Shizuku.isPreV11()
                     && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
         } catch (Throwable t) {
             return false;
@@ -122,7 +157,10 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
 
     private void onStartClicked() {
         if (busy) return;
-        if (!hasPerm()) { log("Cần cấp quyền Shizuku trước"); return; }
+        if (!hasPerm()) {
+            log("Cần cấp quyền Shizuku trước");
+            return;
+        }
         busy = true;
         btnStart.setEnabled(false);
         btnRestore.setEnabled(false);
@@ -140,7 +178,10 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
 
     private void onRestoreClicked() {
         if (busy) return;
-        if (!hasPerm()) { log("Cần cấp quyền Shizuku trước"); return; }
+        if (!hasPerm()) {
+            log("Cần cấp quyền Shizuku trước");
+            return;
+        }
         busy = true;
         btnStart.setEnabled(false);
         btnRestore.setEnabled(false);
@@ -230,5 +271,7 @@ public class MainActivity extends AppCompatActivity implements Shizuku.OnRequest
     protected void onDestroy() {
         super.onDestroy();
         Shizuku.removeRequestPermissionResultListener(this);
+        Shizuku.removeBinderReceivedListener(binderListener);
+        Shizuku.removeBinderDeadListener(binderDeadListener);
     }
 }
